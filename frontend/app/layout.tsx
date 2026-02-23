@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NeuroScroll Vision System",
-  description: "AI Powered Eye Gesture Navigation",
+  title: "JustBlink | Abhishek Jatav",
+  description: "A personal project by Abhishek Jatav, showcasing a collection of my work and projects. Explore my portfolio to see the diverse range of projects I've been involved in, demonstrating my skills and creativity in various domains.",
 };
 
 export default function RootLayout({
