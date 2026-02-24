@@ -1,63 +1,78 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
 export default function InstructionPDF() {
+  const containerRef = useRef(null);
+  const [pages, setPages] = useState([1, 2]); // start with 2 pages
+
+  // Generate new page
+  const addPage = () => {
+    setPages((prev) => [...prev, prev.length + 1]);
+  };
+
+  // Infinite scroll logic
+  useEffect(() => {
+    const container = containerRef.current;
+
+    const handleScroll = () => {
+      if (!container) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+
+      // When user reaches near bottom → add new page
+      if (scrollTop + clientHeight >= scrollHeight - 200) {
+        addPage();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
     <div
+      ref={containerRef}
       id="pdf-container"
       className="h-[75vh] overflow-y-auto bg-gray-200 rounded-xl p-6 shadow-inner">
-      {/* PAGE 1 */}
-      <div className="pdf-page">
-        <h1 className="pdf-title">Reading & Gesture Test – Page 1</h1>
+      {pages.map((pageNumber) => (
+        <div key={pageNumber} className="pdf-page">
+          <h1 className="pdf-title">
+            Reading & Gesture Test – Page {pageNumber}
+          </h1>
 
-        <p className="pdf-text">
-          Modern interaction systems are evolving toward more natural and
-          intuitive control methods. Vision-based interfaces allow users to
-          interact without touching a keyboard or mouse.
-        </p>
+          <p className="pdf-text">
+            Modern interaction systems are evolving toward more natural and
+            intuitive control methods. Vision-based interfaces allow users to
+            interact without touching a keyboard or mouse.
+          </p>
 
-        <p className="pdf-text">
-          <strong>Blink once to scroll down.</strong>
-        </p>
+          <p className="pdf-text">
+            <strong>Blink once to scroll down.</strong>
+          </p>
 
-        <p className="pdf-text">
-          Eye tracking technology enables precise detection of intentional
-          gestures. Temporal analysis helps distinguish deliberate actions from
-          natural reflexes.
-        </p>
+          <p className="pdf-text">
+            Eye tracking technology enables precise detection of intentional
+            gestures. Temporal analysis helps distinguish deliberate actions
+            from natural reflexes.
+          </p>
 
-        <p className="pdf-text">
-          <strong>
-            Perform a long blink (hold for 1 second) to scroll up.
-          </strong>
-        </p>
-      </div>
+          <p className="pdf-text">
+            <strong>
+              Perform a long blink (hold for 1 second) to scroll up.
+            </strong>
+          </p>
 
-      {/* PAGE 2 */}
-      <div className="pdf-page">
-        <h1 className="pdf-title">Reading & Gesture Test – Page 2</h1>
-
-        <p className="pdf-text">
-          Accessibility-focused systems aim to reduce physical dependency on
-          traditional input devices. Blink-driven navigation provides a seamless
-          way to browse long documents hands-free.
-        </p>
-
-        <p className="pdf-text">
-          <strong>Blink once to scroll down.</strong>
-        </p>
-
-        <p className="pdf-text">
-          Reliable gesture detection depends on stable lighting and accurate eye
-          landmark tracking. Consistent head positioning improves system
-          responsiveness and accuracy.
-        </p>
-
-        <p className="pdf-text">
-          <strong>
-            Perform a long blink (hold for 1 second) to scroll up.
-          </strong>
-        </p>
-      </div>
+          <p className="pdf-text">
+            Accessibility-focused systems aim to reduce physical dependency on
+            traditional input devices. Blink-driven navigation provides a
+            seamless way to browse long documents hands-free.
+          </p>
+        </div>
+      ))}
 
       {/* Styling */}
       <style jsx>{`

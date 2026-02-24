@@ -8,21 +8,18 @@ from routers import websocket
 
 load_dotenv()
 
-ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+# Read allowed origins from .env (comma separated)
+origins = os.getenv("ALLOWED_ORIGINS", "")
+origins = [origin.strip() for origin in origins.split(",") if origin.strip()]
 
-if ENVIRONMENT == "production":
-    origins = [os.getenv("FRONTEND_URI_PROD")]
-else:
-    origins = os.getenv("FRONTEND_URI_DEV", "").split(",")
-
-print("Running in:", ENVIRONMENT)
 print("Allowed Origins:", origins)
 
 app = FastAPI()
 
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins if origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,6 +33,7 @@ async def startup():
 async def shutdown():
     await close_mongo_connection()
 
+# Routers
 app.include_router(health.router)
 app.include_router(user.router)
 app.include_router(session.router)

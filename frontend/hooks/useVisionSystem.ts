@@ -15,7 +15,6 @@ export function useVisionSystem() {
   const [status, setStatus] = useState("Initializing...");
 
   useEffect(() => {
-    // 🔒 Prevent double initialization (Next.js StrictMode fix)
     if (initializedRef.current) return;
     initializedRef.current = true;
 
@@ -24,14 +23,23 @@ export function useVisionSystem() {
     async function init() {
       try {
         setStatus("Loading AI Models...");
+
+        // ✅ Load MediaPipe scripts
         await loadMediaPipeScripts();
+
+        // Wait until FaceMesh is available on window
+        if (!(window as any).FaceMesh) {
+          throw new Error("FaceMesh not loaded on window");
+        }
 
         if (!videoRef.current) return;
 
         setStatus("Starting Camera...");
 
         // ✅ Initialize FaceMesh safely
-        faceMesh = new (window as any).FaceMesh({
+        const { FaceMesh } = window as any;
+
+        faceMesh = new FaceMesh({
           locateFile: (file: string) =>
             `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
         });
@@ -81,7 +89,6 @@ export function useVisionSystem() {
           const ctx = canvas.getContext("2d");
           if (!ctx) return;
 
-          // Resize canvas properly
           canvas.width = results.image.width;
           canvas.height = results.image.height;
 
@@ -106,7 +113,6 @@ export function useVisionSystem() {
             landmarks[i].x,
             landmarks[i].y,
           ]);
-
           const right_eye = rightEyeIndices.map((i) => [
             landmarks[i].x,
             landmarks[i].y,
@@ -137,7 +143,6 @@ export function useVisionSystem() {
 
     init();
 
-    // 🧹 Cleanup on unmount
     return () => {
       wsRef.current?.close();
       cameraRef.current?.stop?.();

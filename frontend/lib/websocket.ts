@@ -1,9 +1,7 @@
-// lib/websocket.ts
-
 import { BACKEND_URL } from "./env";
 
 export function createGestureSocket() {
-  const cleanUrl = BACKEND_URL.replace(/\/$/, ""); // remove trailing slash
+  const cleanUrl = BACKEND_URL.replace(/\/$/, "");
 
   const wsProtocol = cleanUrl.startsWith("https") ? "wss" : "ws";
   const baseUrl = cleanUrl.replace(/^https?:\/\//, "");
