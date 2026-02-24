@@ -12,9 +12,9 @@ export default function Home() {
         </h1>
 
         {/* Responsive layout */}
-        <div className="flex flex-col xl:flex-row gap-8">
+        <div className="flex flex-col xl:flex-row gap-8 h-[calc(100vh-160px)]">
           {/* Instruction PDF */}
-          <div className="flex-1">
+          <div className="flex-1 xl:flex-1 h-[30vh] xl:h-auto">
             <InstructionPDF />
           </div>
 
