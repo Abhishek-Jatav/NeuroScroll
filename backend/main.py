@@ -15,6 +15,9 @@ if ENVIRONMENT == "production":
 else:
     origins = os.getenv("FRONTEND_URI_DEV", "").split(",")
 
+print("Running in:", ENVIRONMENT)
+print("Allowed Origins:", origins)
+
 app = FastAPI()
 
 app.add_middleware(

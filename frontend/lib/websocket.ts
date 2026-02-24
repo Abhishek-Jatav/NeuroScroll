@@ -3,9 +3,10 @@
 import { BACKEND_URL } from "./env";
 
 export function createGestureSocket() {
-  const wsProtocol = BACKEND_URL.startsWith("https") ? "wss" : "ws";
+  const cleanUrl = BACKEND_URL.replace(/\/$/, ""); // remove trailing slash
 
-  const baseUrl = BACKEND_URL.replace(/^https?:\/\//, "");
+  const wsProtocol = cleanUrl.startsWith("https") ? "wss" : "ws";
+  const baseUrl = cleanUrl.replace(/^https?:\/\//, "");
 
   return new WebSocket(`${wsProtocol}://${baseUrl}/ws/gesture`);
 }
