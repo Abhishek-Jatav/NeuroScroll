@@ -40,6 +40,7 @@ export default function RootLayout({
             },
           }}
         />
+        {/* {children} */}
         <BackendGate>{children}</BackendGate>
       </body>
     </html>

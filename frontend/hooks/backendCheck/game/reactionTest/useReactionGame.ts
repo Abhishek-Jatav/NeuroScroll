@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 type GameState = "waiting" | "ready" | "clicked" | "tooSoon";
 
-export function useReactionGame(disabled: boolean) {
+export function useReactionGame() {
   const [gameState, setGameState] = useState<GameState>("waiting");
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const [bestScore, setBestScore] = useState<number | null>(null);
@@ -14,20 +14,8 @@ export function useReactionGame(disabled: boolean) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    audioRef.current = new Audio(
-      "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3",
-    );
-  }, []);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("bestReaction");
-    if (saved) setBestScore(Number(saved));
-  }, []);
-
-  const startGame = () => {
-    if (disabled) return;
-
+  // Stable startGame function (important)
+  const startGame = useCallback(() => {
     setReactionTime(null);
     setGameState("waiting");
 
@@ -37,11 +25,22 @@ export function useReactionGame(disabled: boolean) {
       startTimeRef.current = Date.now();
       setGameState("ready");
     }, delay);
-  };
+  }, []);
+
+  // Load sound
+  useEffect(() => {
+    audioRef.current = new Audio(
+      "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3",
+    );
+  }, []);
+
+  // Load best score
+  useEffect(() => {
+    const saved = localStorage.getItem("bestReaction");
+    if (saved) setBestScore(Number(saved));
+  }, []);
 
   const handleClick = () => {
-    if (disabled) return;
-
     if (gameState === "waiting") {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       setGameState("tooSoon");
@@ -65,21 +64,21 @@ export function useReactionGame(disabled: boolean) {
     }
   };
 
+  // Restart after result
   useEffect(() => {
-    if (disabled) return;
-
     if (gameState === "clicked" || gameState === "tooSoon") {
       const restart = setTimeout(startGame, 1200);
       return () => clearTimeout(restart);
     }
-  }, [gameState, disabled]);
+  }, [gameState, startGame]); // ✅ ALWAYS same size
 
+  // Initial start
   useEffect(() => {
     startGame();
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, []);
+  }, [startGame]); // ✅ stable dependency
 
   return {
     gameState,
