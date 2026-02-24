@@ -1,4 +1,4 @@
-// hooks/useVisionSystem.ts
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -9,106 +9,140 @@ export function useVisionSystem() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const cameraRef = useRef<any>(null);
+  const initializedRef = useRef(false);
+
   const [status, setStatus] = useState("Initializing...");
 
   useEffect(() => {
+    // 🔒 Prevent double initialization (Next.js StrictMode fix)
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    let faceMesh: any;
+
     async function init() {
-      setStatus("Loading AI Models...");
-      await loadMediaPipeScripts();
+      try {
+        setStatus("Loading AI Models...");
+        await loadMediaPipeScripts();
 
-      setStatus("Starting Camera...");
+        if (!videoRef.current) return;
 
-      const faceMesh = new (window as any).FaceMesh({
-        locateFile: (file: string) =>
-          `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
-      });
+        setStatus("Starting Camera...");
 
-      faceMesh.setOptions({
-        maxNumFaces: 1,
-        refineLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      });
+        // ✅ Initialize FaceMesh safely
+        faceMesh = new (window as any).FaceMesh({
+          locateFile: (file: string) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+        });
 
-      wsRef.current = createGestureSocket();
+        faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
 
-      wsRef.current.onopen = () => {
-        setStatus("Connected");
-        toast.success("Vision System Connected");
-      };
+        // ✅ WebSocket
+        wsRef.current = createGestureSocket();
 
-      wsRef.current.onerror = () => {
-        setStatus("Connection Failed");
-        toast.error("WebSocket Connection Failed");
-      };
+        wsRef.current.onopen = () => {
+          setStatus("Connected");
+          toast.success("Vision System Connected");
+        };
 
-      wsRef.current.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (!data.gesture) return;
+        wsRef.current.onerror = () => {
+          setStatus("Connection Failed");
+          toast.error("WebSocket Connection Failed");
+        };
 
-        const container = document.getElementById("pdf-container");
+        wsRef.current.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (!data.gesture) return;
 
-        if (data.gesture === "BLINK") {
-          toast("Scroll Down", { icon: "⬇️" });
-          container?.scrollBy({ top: 300, behavior: "smooth" });
-        }
+          const container = document.getElementById("pdf-container");
 
-        if (data.gesture === "LONG_BLINK") {
-          toast("Scroll Up", { icon: "⬆️" });
-          container?.scrollBy({ top: -300, behavior: "smooth" });
-        }
-      };
+          if (data.gesture === "BLINK") {
+            toast("Scroll Down", { icon: "⬇️" });
+            container?.scrollBy({ top: 300, behavior: "smooth" });
+          }
 
-      faceMesh.onResults((results: any) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+          if (data.gesture === "LONG_BLINK") {
+            toast("Scroll Up", { icon: "⬆️" });
+            container?.scrollBy({ top: -300, behavior: "smooth" });
+          }
+        };
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+        // ✅ FaceMesh Results
+        faceMesh.onResults((results: any) => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
 
-        if (!results.multiFaceLandmarks?.length) return;
+          // Resize canvas properly
+          canvas.width = results.image.width;
+          canvas.height = results.image.height;
 
-        const landmarks = results.multiFaceLandmarks[0];
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
 
-        (window as any).drawConnectors(
-          ctx,
-          landmarks,
-          (window as any).FACEMESH_TESSELATION,
-          { color: "#00FFFF", lineWidth: 1 },
-        );
+          if (!results.multiFaceLandmarks?.length) return;
 
-        const leftEyeIndices = [33, 160, 158, 133, 153, 144];
-        const rightEyeIndices = [362, 385, 387, 263, 373, 380];
+          const landmarks = results.multiFaceLandmarks[0];
 
-        const left_eye = leftEyeIndices.map((i) => [
-          landmarks[i].x,
-          landmarks[i].y,
-        ]);
+          (window as any).drawConnectors(
+            ctx,
+            landmarks,
+            (window as any).FACEMESH_TESSELATION,
+            { color: "#00FFFF", lineWidth: 1 },
+          );
 
-        const right_eye = rightEyeIndices.map((i) => [
-          landmarks[i].x,
-          landmarks[i].y,
-        ]);
+          const leftEyeIndices = [33, 160, 158, 133, 153, 144];
+          const rightEyeIndices = [362, 385, 387, 263, 373, 380];
 
-        if (wsRef.current?.readyState === 1) {
-          wsRef.current.send(JSON.stringify({ left_eye, right_eye }));
-        }
-      });
+          const left_eye = leftEyeIndices.map((i) => [
+            landmarks[i].x,
+            landmarks[i].y,
+          ]);
 
-      const camera = new (window as any).Camera(videoRef.current, {
-        onFrame: async () => {
-          await faceMesh.send({ image: videoRef.current });
-        },
-        width: 640,
-        height: 480,
-      });
+          const right_eye = rightEyeIndices.map((i) => [
+            landmarks[i].x,
+            landmarks[i].y,
+          ]);
 
-      camera.start();
+          if (wsRef.current?.readyState === 1) {
+            wsRef.current.send(JSON.stringify({ left_eye, right_eye }));
+          }
+        });
+
+        // ✅ Camera
+        cameraRef.current = new (window as any).Camera(videoRef.current, {
+          onFrame: async () => {
+            if (faceMesh) {
+              await faceMesh.send({ image: videoRef.current });
+            }
+          },
+          width: 640,
+          height: 480,
+        });
+
+        await cameraRef.current.start();
+      } catch (error) {
+        console.error("Vision System Error:", error);
+        setStatus("Initialization Failed");
+      }
     }
 
     init();
+
+    // 🧹 Cleanup on unmount
+    return () => {
+      wsRef.current?.close();
+      cameraRef.current?.stop?.();
+      faceMesh?.close?.();
+    };
   }, []);
 
   return { videoRef, canvasRef, status };

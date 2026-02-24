@@ -11,7 +11,7 @@ export function useBackendWake() {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/ping`);
+        const res = await fetch(`${BACKEND_URL}/health`);
         if (res.ok) {
           setServerAwake(true);
           clearInterval(interval);
@@ -19,7 +19,7 @@ export function useBackendWake() {
       } catch {
         // ignore errors
       }
-    }, 5000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
