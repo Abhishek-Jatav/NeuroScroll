@@ -3,15 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function InstructionPDF() {
-  const containerRef = useRef(null);
-  const [pages, setPages] = useState([1, 2]); // start with 2 pages
+  const containerRef = useRef(null); // ✅ FIXED (no TypeScript type)
+  const [pages, setPages] = useState([1, 2]);
 
-  // Generate new page
   const addPage = () => {
     setPages((prev) => [...prev, prev.length + 1]);
   };
 
-  // Infinite scroll logic
   useEffect(() => {
     const container = containerRef.current;
 
@@ -20,16 +18,15 @@ export default function InstructionPDF() {
 
       const { scrollTop, scrollHeight, clientHeight } = container;
 
-      // When user reaches near bottom → add new page
       if (scrollTop + clientHeight >= scrollHeight - 200) {
         addPage();
       }
     };
 
-    container.addEventListener("scroll", handleScroll);
+    container?.addEventListener("scroll", handleScroll);
 
     return () => {
-      container.removeEventListener("scroll", handleScroll);
+      container?.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -37,7 +34,7 @@ export default function InstructionPDF() {
     <div
       ref={containerRef}
       id="pdf-container"
-      className="h-[75vh] overflow-y-auto bg-gray-200 rounded-xl p-6 shadow-inner">
+      className="h-[75vh] overflow-y-auto rounded-2xl p-6 bg-gradient-to-b from-slate-800 to-slate-900 shadow-inner">
       {pages.map((pageNumber) => (
         <div key={pageNumber} className="pdf-page">
           <h1 className="pdf-title">
@@ -50,9 +47,7 @@ export default function InstructionPDF() {
             interact without touching a keyboard or mouse.
           </p>
 
-          <p className="pdf-text">
-            <strong>Blink once to scroll down.</strong>
-          </p>
+          <p className="pdf-highlight">Blink once to scroll down.</p>
 
           <p className="pdf-text">
             Eye tracking technology enables precise detection of intentional
@@ -60,10 +55,8 @@ export default function InstructionPDF() {
             from natural reflexes.
           </p>
 
-          <p className="pdf-text">
-            <strong>
-              Perform a long blink (hold for 1 second) to scroll up.
-            </strong>
+          <p className="pdf-highlight">
+            Perform a long blink (hold for 1 second) to scroll up.
           </p>
 
           <p className="pdf-text">
@@ -74,36 +67,51 @@ export default function InstructionPDF() {
         </div>
       ))}
 
-      {/* Styling */}
       <style jsx>{`
         .pdf-page {
           background: white;
           max-width: 794px;
           width: 100%;
           min-height: 1000px;
-          margin: 0 auto 50px auto;
-          padding: 70px;
-          border-radius: 10px;
-          box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+          margin: 0 auto 60px auto;
+          padding: 80px;
+          border-radius: 20px;
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
           color: black;
-          font-family: serif;
+          font-family: Georgia, serif;
+          transition: transform 0.3s ease;
+        }
+
+        .pdf-page:hover {
+          transform: scale(1.01);
         }
 
         .pdf-title {
-          font-size: 28px;
+          font-size: 30px;
           font-weight: 600;
-          margin-bottom: 30px;
+          margin-bottom: 40px;
         }
 
         .pdf-text {
-          font-size: 16px;
-          line-height: 1.8;
-          margin-bottom: 15px;
+          font-size: 17px;
+          line-height: 1.9;
+          margin-bottom: 18px;
+          color: #333;
+        }
+
+        .pdf-highlight {
+          font-size: 17px;
+          line-height: 1.9;
+          margin-bottom: 18px;
+          font-weight: 600;
+          background: linear-gradient(90deg, #111, #444);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
 
         @media (max-width: 768px) {
           .pdf-page {
-            padding: 30px;
+            padding: 40px;
             min-height: auto;
           }
         }
