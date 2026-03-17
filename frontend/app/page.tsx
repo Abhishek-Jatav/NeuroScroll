@@ -2,6 +2,7 @@
 
 import VisionSystem from "./components/VisionSystem";
 import InstructionPDF from "./components/InstructionPDF";
+import PortfolioButton from "./components/PortfolioButton";
 
 export default function Home() {
   return (
@@ -17,23 +18,17 @@ export default function Home() {
             AI Vision Powered Gesture-Based Document Navigation
           </p>
 
-          <a
-            href="https://nexabuild-abhishek-jatav.netlify.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-8 bg-white text-black px-8 py-3 rounded-2xl font-medium shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            View Portfolio
-          </a>
+          <div className="mt-8 flex justify-center">
+            <PortfolioButton />
+          </div>
         </div>
 
-        {/* Responsive Layout */}
+        {/* Rest stays same */}
         <div className="grid md:grid-cols-2 gap-10 items-start">
-          {/* PDF Component */}
           <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl">
             <InstructionPDF />
           </div>
 
-          {/* Vision System */}
           <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl">
             <VisionSystem />
           </div>
