@@ -8,6 +8,13 @@ export default function Page() {
       <div className="absolute top-[-150px] left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-cyan-600/10 blur-[150px] rounded-full" />
       <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] bg-purple-600/10 blur-[150px] rounded-full" />
 
+      {/* Floating Backend Wake Component */}
+      <div className="fixed top-4 left-4 z-50 w-[320px]">
+        <div className="bg-[#0f172a]/90 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/10">
+          <ManualBackendCheck />
+        </div>
+      </div>
+
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-12">
         <div className="max-w-5xl w-full">
           {/* Hero Section */}
@@ -92,17 +99,11 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Backend Wake Section */}
-          <div className="max-w-md mx-auto">
-            <div className="bg-[#0f172a]/90 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/10">
-              <ManualBackendCheck />
-            </div>
-
-            <p className="text-center text-sm text-gray-500 mt-4">
-              Backend is hosted on a free server and may take a few moments to
-              wake up before starting the AI vision system.
-            </p>
-          </div>
+          {/* Info Text */}
+          <p className="text-center text-sm text-gray-500 mt-8">
+            Backend is hosted on a free server and may take a few moments to
+            wake up before starting the AI vision system.
+          </p>
         </div>
       </div>
     </div>
