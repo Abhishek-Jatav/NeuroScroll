@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
-import BackendGate from "@/hooks/backendCheck/BackendGate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,14 +15,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "JustBlink | Abhishek Jatav",
-  description: "A personal project by Abhishek Jatav, showcasing a collection of my work and projects. Explore my portfolio to see the diverse range of projects I've been involved in, demonstrating my skills and creativity in various domains.",
+  description:
+    "A personal project by Abhishek Jatav, showcasing a collection of my work and projects.",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
       <body
@@ -34,14 +34,14 @@ export default function RootLayout({
             duration: 2000,
             style: {
               background: "#111827",
-              color: "#fff",
+              color: "#ffffff",
               border: "1px solid rgba(255,255,255,0.08)",
               backdropFilter: "blur(10px)",
             },
           }}
         />
-        {/* {children} */}
-        <BackendGate>{children}</BackendGate>
+
+        {children}
       </body>
     </html>
   );
