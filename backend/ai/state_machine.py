@@ -12,6 +12,7 @@ class BlinkStateMachine:
         self.last_blink_time = 0
 
         self.long_blink_duration = 0.6
+        self.min_blink_duration = 0.35   # ignore anything shorter — natural reflex blink
         self.double_blink_window = 0.5
 
         # ---- Calibration ----
@@ -59,6 +60,9 @@ class BlinkStateMachine:
 
                 if duration >= self.long_blink_duration:
                     gesture = "LONG_BLINK"
+
+                elif duration < self.min_blink_duration:
+                    gesture = None  # natural blink — not intentional, ignore
 
                 elif (current_time - self.last_blink_time) <= self.double_blink_window:
                     gesture = "DOUBLE_BLINK"
